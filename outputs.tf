@@ -1,23 +1,29 @@
 output "instance_public_ip" {
-  # your code here
+  description = "Public IP address of the instance"
+  value       = google_compute_instance.instance.network_interface.0.access_config.0.nat_ip
 }
 
 output "instance_image_id" {
-  # your code here
+  description = "ID of the instance image"
+  value       = google_compute_instance.instance.boot_disk.0.initialize_params.0.image
 }
 
 output "instance_type" {
-  # your code here
+  description = "Type of the instance"
+  value       = var.instance_type
 }
 
 output "instance_network" {
-  # your code here
+  description = "Network of the instance"
+  value       = google_compute_network.network.self_link
 }
 
 output "instance_subnet" {
-  # your code here
+  description = "Subnetwork of the instance"
+  value       = google_compute_subnetwork.subnet.self_link
 }
 
 output "instance_zone" {
-  # your code here
+  description = "Zone of the instance"
+  value       = var.zone
 }

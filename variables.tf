@@ -1,3 +1,4 @@
+#project, region, network_name, subnet_name
 variable "project" {
   description = "Your project name"
   type        = string
