@@ -1,4 +1,3 @@
-#project, region, network_name, subnet_name
 variable "project" {
   description = "Your project name"
   type        = string
@@ -61,11 +60,6 @@ variable "instance_type" {
   description = "The instance type to be used for the Compute Engine instance"
   type        = string
   default     = "e2-micro"
-}
-
-variable "environment" {
-  default = "dev"
-  type    = string
 }
 
 variable "allowed_ports" {

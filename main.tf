@@ -1,43 +1,61 @@
+# Configure the GCP provider
 provider "google" {
-  project = var.project
-  region  = var.region
+  credentials = file("<path_to_your_service_account_key_json_file>")
+  project     = var.project
+  region      = var.region
 }
 
-resource "google_compute_network" "network" {
-  name = var.network_name
+# Create VPC
+resource "google_compute_network" "vpc_network" {
+  name                    = var.network_name
+  auto_create_subnetworks = false
 }
 
-resource "google_compute_subnetwork" "subnet" {
+# Create Subnet
+resource "google_compute_subnetwork" "vpc_subnet" {
   name          = var.subnet_name
-  region        = var.region
-  network       = google_compute_network.network.self_link
   ip_cidr_range = var.subnet_cidr
+  network       = google_compute_network.vpc_network.self_link
+  region        = var.region
 }
 
-resource "google_compute_instance" "instance" {
+# Create Compute Engine Instance
+resource "google_compute_instance" "vm_instance" {
   name         = var.instance_name
   machine_type = var.instance_type
   zone         = var.zone
-  tags         = var.network_tags
 
   boot_disk {
     initialize_params {
-      image = "${var.image_project}/${var.image_family}"
+      image_family = var.image_family
+      image_project = var.image_project
     }
   }
 
   network_interface {
-    network = google_compute_network.network.id
-    subnetwork = google_compute_subnetwork.subnet.id
+    network = google_compute_network.vpc_network.name
+    subnetwork = google_compute_subnetwork.vpc_subnet.name
   }
 
-  metadata = {
-    environment = var.environment
-  }
+  metadata_startup_script = <<-EOF
+                            #!/bin/bash
+                            apt-get update
+                            apt-get install -y apache2
+                            systemctl start apache2
+                            EOF
+
+  tags = var.network_tags
+}
+
+# Create Firewall Rule
+resource "google_compute_firewall" "firewall" {
+  name    = "allow-ports"
+  network = google_compute_network.vpc_network.name
 
   allow {
     protocol = "tcp"
     ports    = var.allowed_ports
   }
-}
 
+  source_ranges = ["0.0.0.0/0"]
+}
